@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: influxdb
+  name: influxdb
+  namespace: influxdb
+spec:
+  serviceName: "influxdb"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "influxdb"
+  template:
+    metadata:
+      labels:
+        app: "influxdb"
+    spec:
+      containers:
+      - image: influxdb:2.0.6
+        name: influxdb
+        ports:
+        - containerPort: 8086
+          name: influxdb
+        volumeMounts:
+        - mountPath: /var/lib/influxdb
+          name: influxdb-pv
+      volumes:
+      - name: influxdb-pv
+        persistentVolumeClaim:
+          claimName: influxdb-pvc
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+  namespace: influxdb
+spec:
+  ports:
+  - name: influxdb
+    port: 8086
+    targetPort: 8086
+  selector:
+    app: "influxdb"
+  type: ClusterIP

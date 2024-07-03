@@ -1,0 +1,133 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf-config
+data:
+  telegraf.conf: |+
+    [agent]
+      interval = "5s"
+
+      round_interval = true
+
+      metric_batch_size = 1000
+
+      metric_buffer_limit = 10000
+
+      collection_jitter = "5s"
+
+      flush_interval = "10s"
+
+      flush_jitter = "5s"
+
+      precision = ""
+
+      hostname =""
+
+      omit_hostname = false
+
+      debug = true
+
+      quiet = false
+
+
+    [[outputs.influxdb_v2]]
+      alias = "mqtt"
+      namepass = ["sensor_network"]
+        urls = ["http://10.244.2.7:8086"]
+
+        token = 
+
+        organization = 
+
+        bucket = "iot_center"
+
+
+    [[outputs.http]]
+        url = "http://10.244.2.8:3000/api/live/push/custom_stream_id"
+        data_format = "influx"
+
+      [[outputs.http.headers]]
+        Authorization = 
+
+
+
+    [[inputs.mqtt_consumer]]
+      alias = "thing_network_consumer"
+      name_override = "sensor_network"
+      servers = ["tcp://eu1.cloud.thethings.network:1883"]
+      topics = ["v3/rak4630-dummy-tx@ttn/devices/eui-ac1f09fffe08ff4a/up"]
+
+        username = 
+        password = 
+        data_format = "json_v2"
+
+    [[inputs.mqtt_consumer.json_v2]]
+      [[inputs.mqtt_consumer.json_v2.tag]]
+      path = "@this.end_device_ids.device_id"
+
+    [[inputs.mqtt_consumer.json_v2.object]]
+      path = "end_device_ids"
+      disable_prepend_keys = true
+
+
+    [[inputs.mqtt_consumer.json_v2.object]]
+      path = "uplink_message"
+      disable_prepend_keys = true
+      excluded_keys = ["time", "timestamp"]
+
+    [[inputs.mqtt_consumer.json_v2.object]]
+      path = "uplink_message.decoded_payload"
+      disable_prepend_keys = true
+      excluded_keys = ["time", "timestamp"]
+
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: telegraf
+  name: telegraf
+  namespace: telegraf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "telegraf"
+  template:
+    metadata:
+      labels:
+        app: "telegraf"
+    spec:
+      containers:
+      - image: telegraf:latest
+        name: telegraf
+        volumeMounts:
+        - mountPath: /etc/telegraf/telegraf.conf
+          subPath: telegraf.conf
+          name: telegraf-config-vol
+          readOnly: true
+      volumes:
+      - name: telegraf-config-vol
+        configMap:
+          name: telegraf-config
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telegraf
+  namespace: telegraf
+spec:
+  ports:
+  - protocol: TCP
+    port: 8181
+    targetPort: 8181
+  selector:
+    app: "telegraf"
+
+
+
