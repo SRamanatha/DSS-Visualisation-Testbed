@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: grafana-pv
+spec:
+  claimRef:
+    name: grafana-pvc
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 2Gi
+  storageClassName: local
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: /home/master1/graf-data
+
+
