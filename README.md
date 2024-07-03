@@ -100,8 +100,6 @@ Health of K8s cluster can be checked at any point after initialization by runnin
 
 
 ## 5. Deploying TIG stack
-The instructions used to create persistent volumes and deploy TIG stack are listed in `microservices.sh`. **Do not** run this shell script as there are additional intermediate steps to achieve a proper setup.
-
 InfluxDB must be deployed before Telegraf as Telegraf requires token from InfluxDB. Grafana can be deployed at any point. However, the intention is to use InfluxDB as data source within Grafana. Therefore, the recommended order of deployment is - InfluxDB, Telegraf, Grafana.
 
 ### 5.1 Namespaces
