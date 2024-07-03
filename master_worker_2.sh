@@ -11,6 +11,6 @@ image-endpoint: unix:///run/containerd/containerd.sock
 timeout: 2
 debug: true # <- if you don't want to see debug info you can set this to false
 pull-image-on-create: false
-EOF>>
+EOF
 
 sudo systemctl enable kubelet
